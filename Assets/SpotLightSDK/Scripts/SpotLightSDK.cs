@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Collections;
 using GoogleMobileAds.Api;
@@ -29,7 +29,7 @@ public class SpotLightSDK : MonoBehaviour
 	[Header("\tTo Enable Test ads on mobile... Just Use Debug Build")]
 
 	[Header("Apple Store IDs")]
-    string moreGamesIOS = "https://itunes.apple.com/us/developer/asif-nadeem/id1441754142";
+    string moreGamesIOS = "iTunes Link Here";
 	public string rateUsIOS;
 //public string admobBannerIdIOS;
 	public string interestitialIdIOS;
