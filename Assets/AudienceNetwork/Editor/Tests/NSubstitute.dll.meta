@@ -1,0 +1,30 @@
+fileFormatVersion: &1053403587 2
+guid: c8af0073ea3104d0c9b35bb72f373d27
+PluginImporter:
+  externalObjects: &1338728697 {}
+  serializedVersion: 2
+  iconMap: {}
+  executionOrder: {}
+  isPreloaded: &1844329210 0
+  isOverridable: 0
+  platformData:
+  - &884988447 first:
+      Any: &257034777 ''
+    &1910069390 second:
+      &1483776151 enabled: 0
+      &211058598 settings: {}
+  - first:
+      &1265087032 Editor: Editor
+    second:
+      enabled: 1
+      settings:
+        DefaultValueInitialized: true
+  - first:
+      Windows Store Apps: WindowsStoreApps
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  userData: ''
+  assetBundleName: ''
+  assetBundleVariant: ''
