@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using System.Collections;
 using GoogleMobileAds.Api;
@@ -7,39 +7,42 @@ using UnityEngine.Advertisements;
 using UnityEngine.UI;
 //using AudienceNetwork;
 
-//public enum BannerSize 
-//{
-//	Banner,
-//	MediumRectangle,
-//	IABBanner,
-//	Leaderboard,
-//	SmartBanner
-//}
+public enum BannerSize 
+{
+	Banner,
+	MediumRectangle,
+	IABBanner,
+	Leaderboard,
+	SmartBanner
+}
 
 public class SpotLightSDK : MonoBehaviour 
 {
     public static SpotLightSDK instance;
-    [Header("SpotLight Studio SDK V1.3 (ONLY FOR IOS)")]
-	[Header("UnityAds , Admob Banner, Interstitial & Rewarded Video")] // Not using Admob Banner
-	[Header("Google,Unity,Facebook Ads")]
-	//public bool banner = false;
-	//public BannerSize bannerSize = BannerSize.SmartBanner;
-	//public AdPosition bannerPosition = AdPosition.Top;
-
-	[Header("\tTo Enable Test ads on mobile... Just Use Debug Build")]
-
-	[Header("Apple Store IDs")]
-    string moreGamesIOS = "iTunes Link Here";
-	public string rateUsIOS;
-//public string admobBannerIdIOS;
+    public bool autoInatializeSdk;
+    public string bundleIdentifier;
+    [Header("App Store")]
+    public string admobBannerIdIOS;
 	public string interestitialIdIOS;
 	public string admobRewardedIOS;
-	public string unityIDiOS;
+	public string unityIdIos;
+    public string rateUsIOS;
+    string moreGamesIOS = "https://itunes.apple.com/us/developer/asif-nadeem/id1441754142";
+
+    [Header("Play Store")]
+    public string bannerIDAndriod;
+    public string interestitialIDAndriod;
+    public string admobRewardedAndriod;
+    public string unityIdAndroid;
+    //public string rateUsPlayStore;
+    public string moreGamesPlayStore;
+
+    //public bool banner = false;
+    public BannerSize bannerSize = BannerSize.SmartBanner;
+    public AdPosition bannerPosition = AdPosition.Top;
 
 
-	
-
-	private InterstitialAd interstitial, houseInterstitial;
+    private InterstitialAd interstitial;
     bool isGoogleIntLoaded;
     public bool isGoogleRewardedVideoLoad;
     //bool isUnityRewardedLoad;
@@ -47,17 +50,20 @@ public class SpotLightSDK : MonoBehaviour
     public bool isLifeReward;
     //public bool lifeReward;
 	//private BannerView bannerView;
-	private AdRequest request;
+	private AdRequest request;   // Admob Interstitial Request call
 
     public RewardBasedVideoAd rewardBasedVideo;
     private int interstitialCount = 0;
     private int rewardedVideoCount = 0;
+    //Unity IDs
     string placementIdRewarded = "rewardedVideo";
     string placementIdUnity = "video";
 
     [Header("Facebook Ads")]
     InterstitialAdScene fbInterstitial;
     AdViewScene fbBanner;
+
+
 
 
 
@@ -77,50 +83,36 @@ public class SpotLightSDK : MonoBehaviour
 	{
 		if (Debug.isDebugBuild) 
 		{
-			//Admob test ads ids
-            //admobBannerIdIOS = "ca-app-pub-3940256099942544/2934735716";
+			//Admob test ads ids for IOS
+            admobBannerIdIOS = "ca-app-pub-3940256099942544/2934735716";
             interestitialIdIOS = "ca-app-pub-3940256099942544/4411468910";
             admobRewardedIOS = "ca-app-pub-3940256099942544/1712485313";
+
+            bannerIDAndriod = "ca-app-pub-3940256099942544/6300978111";
+            interestitialIDAndriod = "ca-app-pub-3940256099942544/1033173712";
+            admobRewardedAndriod = "ca-app-pub-3940256099942544/5224354917";
+            
+
 		}
-        fbInterstitial = GetComponent<InterstitialAdScene>(); //Getting facebook int ad object
+
+        fbInterstitial = GetComponent<InterstitialAdScene>(); //Getting facebook interstitial ad object
         fbBanner = GetComponent<AdViewScene>();
         MobileAds.SetiOSAppPauseOnBackground(true);
 		DontDestroyOnLoad(gameObject);
-		RequestInterstitial();
-
-        //FacebookBannerShow();
-
-
-  //      if (banner) {
-		//	RequestBanner ();
-		//}
-	
 		Screen.sleepTimeout = SleepTimeout.NeverSleep;
-		InitializeUnityAds ();
-		Admob_Rewarded_Start(); // Getting the instance of Admob rewarded
+        AdmobRewardedInstance(); // Getting the instance of Admob rewarded
 
-        //// Get singleton reward based video ad reference.
-        //this.rewardBasedVideo = RewardBasedVideoAd.Instance;
-
-        //// Called when an ad request has successfully loaded.
-        //rewardBasedVideo.OnAdLoaded += HandleRewardBasedVideoLoaded;
-        //// Called when an ad request failed to load.
-        //rewardBasedVideo.OnAdFailedToLoad += HandleRewardBasedVideoFailedToLoad;
-        //// Called when an ad is shown.
-        //rewardBasedVideo.OnAdOpening += HandleRewardBasedVideoOpened;
-        //// Called when the ad starts to play.
-        //rewardBasedVideo.OnAdStarted += HandleRewardBasedVideoStarted;
-        //// Called when the user should be rewarded for watching a video.
-        //rewardBasedVideo.OnAdRewarded += HandleRewardBasedVideoRewarded;
-        //// Called when the ad is closed.
-        //rewardBasedVideo.OnAdClosed += HandleRewardBasedVideoClosed;
-        //// Called when the ad click caused the user to leave the application.
-        //rewardBasedVideo.OnAdLeavingApplication += HandleRewardBasedVideoLeftApplication;
-
-        ////this.RequestRewardBasedVideo();
+        if (autoInatializeSdk)
+        {
+            InitializeUnityAds();
+            LoadAdmobInterstitial();
+            LoadAdmobRewardedVideo();
+            LoadFacebookInterstitial();
+            //ShowFacebookBanner();
+        }
 
 
-	}
+    }
 
 	void InitializeUnityAds()
 	{
@@ -145,17 +137,17 @@ public class SpotLightSDK : MonoBehaviour
 	//Admob Ads
 	//private void RequestBanner()
 	//{
-		//#if UNITY_ANDROID
-		//string adUnitId = bannerID;
-		//#elif UNITY_IPHONE
-		//string adUnitId = admobBannerIdIOS;
-		//#else
-		//string adUnitId = "unexpected_platform";
-		//#endif
+	//	#if UNITY_ANDROID
+	//	string adUnitId = bannerIDAndriod;
+	//	#elif UNITY_IPHONE
+	//	string adUnitId = admobBannerIdIOS;
+	//	#else
+	//	string adUnitId = "unexpected_platform";
+	//	#endif
 
-        //if(this.bannerView !=null){
-        //    this.bannerView.Destroy();
-        //}
+ //       if(this.bannerView !=null){
+ //           this.bannerView.Destroy();
+ //       }
 
 	//	switch(bannerSize)
 	//	{
@@ -196,7 +188,7 @@ public class SpotLightSDK : MonoBehaviour
 	private void RequestInterstitial()
 	{
 		#if UNITY_ANDROID
-		string adUnitId = interestitialID;
+		string adUnitId = interestitialIDAndriod;
 		#elif UNITY_IPHONE
 		string adUnitId = interestitialIdIOS;
 		#else
@@ -251,9 +243,9 @@ public class SpotLightSDK : MonoBehaviour
         
     }
 
+    ////////////////////////// UNITY ADS///////////////////////
 
-
-	public void ShowUnityRewardedAd ()
+    public void ShowUnityRewardedAd ()
 	{
 		var options = new ShowOptions();
 		options.resultCallback = HandleShowResult;
@@ -302,59 +294,47 @@ public class SpotLightSDK : MonoBehaviour
 			Debug.LogError("Video failed to show");
 		}
 	}
-//	//END REGIION UNITY ADS
-//	//Social Media Links
-	public void MoreGames()
-	{
-		Application.OpenURL (moreGamesIOS);
-		Debug.Log ("Visited more fun link");
-	}
-		
-
-	public void RateUsRUL()
-	{
-		#if UNITY_ANDROID
-		Application.OpenURL ("https://play.google.com/store/apps/details?id=" + bundleIdentifier);
-		#elif UNITY_IPHONE
-		Application.OpenURL (rateUsIOS);
-		#endif
-		Debug.Log ("Visited rate us link");
-	}
-
-	public void FaceBook()
-	{
-		Application.OpenURL ("https://www.facebook.com/SpotLightGamesStudio/");
-		Debug.Log ("Visited Facebook link");
-	}
-
-	public void Twitter()
-	{
-//		Application.OpenURL ("https://twitter.com");
-		Debug.Log ("Visited Twitter link");
-	}
-	
-	public void Gmail()
-	{
-		Application.OpenURL ("https://plus.google.com/");
-		Debug.Log ("Visited Gamil link");
-	}
+///////////////////////////END REGIION UNITY ADS///////////////////////
 
 
-	//ads sequence
-	
-	
-	public void ShowAllInterstitialAds() // Admob & Facebook Interstitial
+    public void LoadAdmobInterstitial()
+    {
+        RequestInterstitial();
+    }
+    public void ShowAdmobInterstitial()
+    {
+        interstitial.Show();
+    }
+
+    public void LoadFbInterstitial()
+    {
+        fbInterstitial.LoadInterstitial();
+    }
+
+    public void ShowFbInterstitial()
+    {
+        fbInterstitial.ShowInterstitial();
+    }
+
+    public void ShowAdmobRewarded()
+    {
+        rewardBasedVideo.Show();
+    }
+
+
+
+    public void ShowAllInterstitialAds() // Admob & Facebook Interstitial
     {
         if(interstitialCount % 2== 0)
         {
             interstitialCount += 1;
             if (isGoogleIntLoaded)
             {
-                interstitial.Show();
+                ShowAdmobInterstitial();
             }
             else if(fbInterstitial.isLoaded)
             {
-                fbInterstitial.ShowInterstitial();
+                ShowFbInterstitial();
             }
             else
             {
@@ -366,12 +346,12 @@ public class SpotLightSDK : MonoBehaviour
             interstitialCount += 1;
             if (fbInterstitial.isLoaded)
             {
-                fbInterstitial.ShowInterstitial();
+                ShowFbInterstitial();
             }
             else if(isGoogleIntLoaded)
             {
-                fbInterstitial.LoadInterstitial();
-                interstitial.Show();
+                LoadFbInterstitial();
+                ShowAdmobInterstitial();
             }
             else
             {
@@ -388,7 +368,7 @@ public class SpotLightSDK : MonoBehaviour
             rewardedVideoCount += 1;
             if (isGoogleRewardedVideoLoad)
             {
-                rewardBasedVideo.Show();
+                ShowAdmobRewarded();
             }
             else if (Advertisement.IsReady(placementIdRewarded))
             {
@@ -407,7 +387,7 @@ public class SpotLightSDK : MonoBehaviour
                 ShowUnityRewardedAd();
             }else if (isGoogleRewardedVideoLoad)
             {
-                rewardBasedVideo.Show();
+                ShowAdmobRewarded();
             }
             else
             {
@@ -418,13 +398,13 @@ public class SpotLightSDK : MonoBehaviour
 
 
     }
-
+    
 
     /////////////////////ADMOB REWARDED VIDEO ADD/////////
 
 
 
-    public void Admob_Rewarded_Start()
+    private void AdmobRewardedInstance() // Getting Instance & Event Subscriber
 	{
 		// Get singleton reward based video ad reference.
 		rewardBasedVideo = RewardBasedVideoAd.Instance;
@@ -444,7 +424,6 @@ public class SpotLightSDK : MonoBehaviour
 		// Called when the ad click caused the user to leave the application.
 		rewardBasedVideo.OnAdLeavingApplication += HandleRewardBasedVideoLeftApplication;
 
-		RequestRewardedVideo();
 	}
 
 
@@ -452,12 +431,12 @@ public class SpotLightSDK : MonoBehaviour
 
 
 
-	private void RequestRewardedVideo()
+	public void LoadAdmobRewardedVideo()
 	{
         isGoogleRewardedVideoLoad = false;  //Set False before Another request
 		#if UNITY_ANDROID
 		//string adUnitId = "ca-app-pub-3940256099942544/5224354917";
-		string adUnitId = admobRewarded;
+		string adUnitId = admobRewardedAndriod;
 
 		#elif UNITY_IPHONE
 		string adUnitId = admobRewardedIOS;
@@ -506,7 +485,7 @@ public class SpotLightSDK : MonoBehaviour
 	public void HandleRewardBasedVideoClosed(object sender, EventArgs args)
 	{
         AudioListener.volume = 1f;
-        RequestRewardedVideo();
+        LoadAdmobRewardedVideo();
 
         Debug.Log("Inside Handle Reward Based Video Closed");
 		MonoBehaviour.print("HandleRewardBasedVideoClosed event received");
@@ -528,18 +507,24 @@ public class SpotLightSDK : MonoBehaviour
 
 
 
-    //Facebook Audionce network
-    public void FacebookInterstital()
+    /// <summary>
+    /// Facebook Audionce network Inatialization
+    /// </summary>
+    public void LoadFacebookInterstitial()
+    {
+        GetComponent<InterstitialAdScene>().LoadInterstitial();
+    }
+    public void ShowFacebookInterstital()
     {
         GetComponent<InterstitialAdScene>().ShowInterstitial();
     }
 
-    public void FacebookBannerShow()
+    public void ShowFacebookBanner()
     {
        fbBanner.LoadBanner();
     }
 
-    public void FacebookBannerHide()
+    public void HideFacebookBanner()
     {
         fbBanner.OnDestroFbBanner();
     }
@@ -556,6 +541,49 @@ public class SpotLightSDK : MonoBehaviour
             PlayerPrefs.SetInt("Currency", PlayerPrefs.GetInt("Currency") + 500);
         }
 
+    }
+
+
+    //  //Social Media Links
+    public void MoreGamesUrl()
+    {
+#if UNITY_ANDROID
+        Application.OpenURL(moreGamesPlayStore);
+        //Debug.Log("Visited more fun link Andriod");
+#elif UNITY_IPHONE
+                Application.OpenURL(moreGamesIOS);
+                Debug.Log("Visited more fun link IOS");
+#else
+                string adUnitId = "unexpected_platform";
+#endif
+    }
+
+
+    public void RateUsUrl()
+    {
+#if UNITY_ANDROID
+        Application.OpenURL("https://play.google.com/store/apps/details?id=" + bundleIdentifier);
+#elif UNITY_IPHONE
+        Application.OpenURL (rateUsIOS);
+#endif
+        Debug.Log("Visited rate us link");
+    }
+
+    public void FaceBookUrl()
+    {
+        Application.OpenURL("https://www.facebook.com/SpotLightGamesStudio/");
+        Debug.Log("Visited Facebook link");
+    }
+
+    public void Twitter()
+    {
+        Debug.Log("Visited Twitter link");
+    }
+
+    public void Gmail()
+    {
+        Application.OpenURL("https://plus.google.com/");
+        Debug.Log("Visited Gamil link");
     }
 
 

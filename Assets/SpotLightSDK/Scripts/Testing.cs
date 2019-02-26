@@ -26,12 +26,12 @@ public class Testing : MonoBehaviour
 
 	public void MoreGames()
 	{
-        SpotLightSDK.instance.MoreGames ();
+        SpotLightSDK.instance.MoreGamesUrl ();
 	}
 
 	public void FaceBook()
 	{
-        SpotLightSDK.instance.FaceBook ();
+        SpotLightSDK.instance.FaceBookUrl ();
 	}
 
 	public void Twitter()

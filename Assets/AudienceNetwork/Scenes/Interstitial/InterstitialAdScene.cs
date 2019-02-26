@@ -19,7 +19,7 @@ public class InterstitialAdScene : MonoBehaviour
 
     private void OnEnable()
     {
-        LoadInterstitial();
+        //LoadInterstitial();
     }
 
     // Load button
