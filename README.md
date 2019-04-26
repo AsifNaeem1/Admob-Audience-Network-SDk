@@ -1,2 +1,2 @@
-# Admob-Audience-Network-SDk
-Admob &amp; Facebook Audience network ads
+# Ads Sdk
+Admob, Unity & Audience network ads
