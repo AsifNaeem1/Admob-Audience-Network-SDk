@@ -6,10 +6,10 @@ Google Play services 17.2.0\
 Google Mobile Ads iOS SDK 7.42.0\
 Unity Jar Resolver 1.2.102.0\
 Audience Network 5.2.0\
-Note: Use Gradle build system to build apk\
+Note: Use Gradle build system to build apk
 
-Test Note: Tested in Unity 2018.3.0f2 for andriod plateform. Stable release\
-\
+Test Note: Tested in Unity 2018.3.0f2 for andriod plateform. Stable release
+
 Check List \
 #For Andriod\
 1- Drag AdsManager in scene. Add Admob, Audience Network and Unity ID for desire plateform.\
