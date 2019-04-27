@@ -8,18 +8,13 @@ using UnityEngine.UI;
 
 public class AdViewScene : MonoBehaviour
 {
-    public string fBBannerID;
+
     private AdView adView;
     private AdPosition currentAdViewPosition;
     private ScreenOrientation currentScreenOrientation;
-    //public Text statusLabel;
+    public Text statusLabel;
 
-    private void OnEnable()
-    {
-        //LoadBanner();
-    }
-
-    public void OnDestroFbBanner()
+    void OnDestroy()
     {
         // Dispose of banner ad when the scene is destroyed
         if (this.adView) {
@@ -35,34 +30,33 @@ public class AdViewScene : MonoBehaviour
             this.adView.Dispose();
         }
 
-        //this.statusLabel.text = "Loading Banner...";
+        this.statusLabel.text = "Loading Banner...";
 
         // Create a banner's ad view with a unique placement ID (generate your own on the Facebook app settings).
         // Use different ID for each ad placement in your app.
-        this.adView = new AdView(fBBannerID, AdSize.BANNER_HEIGHT_50);
+        this.adView = new AdView("YOUR_PLACEMENT_ID", AdSize.BANNER_HEIGHT_50);
 
         this.adView.Register(this.gameObject);
-        //this.currentAdViewPosition = AdPosition.TOP;
-        //this.currentAdViewPosition = AdPosition.TOP;
+        this.currentAdViewPosition = AdPosition.CUSTOM;
 
         // Set delegates to get notified on changes or when the user interacts with the ad.
         this.adView.AdViewDidLoad = (delegate() {
             this.currentScreenOrientation = Screen.orientation;
             Debug.Log("Banner loaded.");
-            this.adView.Show(AdPosition.TOP);
-            //this.statusLabel.text = "Banner loaded";
+            this.adView.Show(100);
+            this.statusLabel.text = "Banner loaded";
         });
         adView.AdViewDidFailWithError = (delegate(string error) {
             Debug.Log("Banner failed to load with error: " + error);
-            //this.statusLabel.text = "Banner failed to load with error: " + error;
+            this.statusLabel.text = "Banner failed to load with error: " + error;
         });
         adView.AdViewWillLogImpression = (delegate() {
             Debug.Log("Banner logged impression.");
-            //this.statusLabel.text = "Banner logged impression.";
+            this.statusLabel.text = "Banner logged impression.";
         });
         adView.AdViewDidClick = (delegate() {
             Debug.Log("Banner clicked.");
-            //this.statusLabel.text = "Banner clicked.";
+            this.statusLabel.text = "Banner clicked.";
         });
 
         // Initiate a request to load an ad.
@@ -70,6 +64,10 @@ public class AdViewScene : MonoBehaviour
     }
 
     // Next button
+    public void NextScene()
+    {
+        SceneManager.LoadScene("RewardedVideoAdScene");
+    }
 
     // Change button
     // Change the position of the ad view when button is clicked
@@ -78,7 +76,17 @@ public class AdViewScene : MonoBehaviour
     // ad view is at custom position: move it to the top
     public void ChangePosition()
     {
+        switch (this.currentAdViewPosition) {
+        case AdPosition.TOP:
+            this.setAdViewPosition(AdPosition.BOTTOM);
+            break;
+        case AdPosition.BOTTOM:
+            this.setAdViewPosition(AdPosition.CUSTOM);
+            break;
+        case AdPosition.CUSTOM:
             this.setAdViewPosition(AdPosition.TOP);
+            break;
+        }
     }
 
     private void OnRectTransformDimensionsChange()

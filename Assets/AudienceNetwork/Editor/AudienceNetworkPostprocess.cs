@@ -17,16 +17,11 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-using System.Diagnostics;
-
 namespace AudienceNetwork.Editor
 {
-    using System;
-    using System.IO;
     using UnityEditor;
     using UnityEditor.Callbacks;
     using UnityEngine;
-    using AudienceNetwork.Editor;
 
     public static class XCodePostProcess
     {
@@ -39,7 +34,7 @@ namespace AudienceNetwork.Editor
         public static void OnPostProcessBuild(BuildTarget target, string path)
         {
             if (target == BuildTarget.Android) {
-                var defaultIdentifier = "com.Company.ProductName";
+                string defaultIdentifier = "com.Company.ProductName";
 
                 // Find application identifier (backwards compatible prior to Unity 5.6)
                 if (Utility.GetApplicationIdentifier() == defaultIdentifier) {

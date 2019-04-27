@@ -11,6 +11,7 @@ using UnityEngine.SceneManagement;
 public class NativeBannerAdScene : MonoBehaviour
 {
     private NativeBannerAd nativeBannerAd;
+    //AdmobHandler admob;
 
     // UI elements in scene
     [Header("Text:")]
@@ -24,13 +25,18 @@ public class NativeBannerAdScene : MonoBehaviour
     public Button callToActionButton;
     [Header("Ad Choices:")]
     public AdChoices adChoices;
+    public string YOUR_PLACEMENT_ID;
 
     void Awake()
     {
         this.Log("Native banner ad ready to load.");
     }
+    private void Start()
+    {
+        //admob = GameObject.FindObjectOfType<AdmobHandler>();
+    }
 
-    void OnDestroy()
+    public void OnDestroy_FB_Banner()
     {
         // Dispose of native ad when the scene is destroyed
         if (this.nativeBannerAd) {
@@ -48,7 +54,7 @@ public class NativeBannerAdScene : MonoBehaviour
 
         // Create a native ad request with a unique placement ID (generate your own on the Facebook app settings).
         // Use different ID for each ad placement in your app.
-        this.nativeBannerAd = new AudienceNetwork.NativeBannerAd("YOUR_PLACEMENT_ID");
+        this.nativeBannerAd = new AudienceNetwork.NativeBannerAd(YOUR_PLACEMENT_ID);
 
         // Wire up GameObject with the native banner ad. The game object should be a child of the canvas.
         nativeBannerAd.RegisterGameObject(gameObject);

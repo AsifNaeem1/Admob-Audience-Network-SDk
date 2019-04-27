@@ -8,19 +8,17 @@ using UnityEngine.SceneManagement;
 
 public class InterstitialAdScene : MonoBehaviour
 {
-    public string fbInterstitalID;
+    //AdmobHandler admob;
     private InterstitialAd interstitialAd;
-    public bool isLoaded;
+    private bool isLoaded;
 #pragma warning disable 0414
     private bool didClose;
 #pragma warning restore 0414
     // UI elements in scene
     //public Text statusLabel;
+    public string YOUR_PLACEMENT_ID;
 
-    private void OnEnable()
-    {
-        //LoadInterstitial();
-    }
+
 
     // Load button
     public void LoadInterstitial()
@@ -29,7 +27,7 @@ public class InterstitialAdScene : MonoBehaviour
 
         // Create the interstitial unit with a placement ID (generate your own on the Facebook app settings).
         // Use different ID for each ad placement in your app.
-        this.interstitialAd = new InterstitialAd(fbInterstitalID);
+        this.interstitialAd = new InterstitialAd(YOUR_PLACEMENT_ID);
         
         this.interstitialAd.Register(this.gameObject);
 
@@ -46,19 +44,26 @@ public class InterstitialAdScene : MonoBehaviour
         });
         interstitialAd.InterstitialAdWillLogImpression = (delegate() {
             Debug.Log("Interstitial ad logged impression.");
+            AudioListener.pause = true;
+            AudioListener.volume = 0;
+
         });
         interstitialAd.InterstitialAdDidClick = (delegate() {
             Debug.Log("Interstitial ad clicked.");
         });
 
-        this.interstitialAd.InterstitialAdDidClose = (delegate() {
+        this.interstitialAd.interstitialAdDidClose = (delegate() {
             Debug.Log("Interstitial ad did close.");
+
             this.didClose = true;
-            LoadInterstitial();
             if (this.interstitialAd != null) {
                 this.interstitialAd.Dispose();
             }
+            AudioListener.pause = false;
+            AudioListener.volume = 1;
             LoadInterstitial();
+
+
         });
 
 #if UNITY_ANDROID
@@ -84,21 +89,20 @@ public class InterstitialAdScene : MonoBehaviour
     // Show button
     public void ShowInterstitial()
     {
-        if (this.isLoaded)
-        {
+        if (this.isLoaded) {
             this.interstitialAd.Show();
             this.isLoaded = false;
-            //this.statusLabel.text = "FB Int shown";
-        }
-        else
-        {
+           //this.statusLabel.text = "InterstitialAd Ad is showing";
+            Debug.Log("Showing facebook interstitial Ad");
+        } else {
+            //this.statusLabel.text = "Ad not loaded. Click load to request an ad.";
+            Debug.Log("Ad not loaded. requesting to load it again");
             LoadInterstitial();
+
         }
-        }
+    }
 
-
-
-    public void FBIntDestroy()
+    void OnDestroy()
     {
         // Dispose of interstitial ad when the scene is destroyed
         if (this.interstitialAd != null) {
@@ -106,6 +110,13 @@ public class InterstitialAdScene : MonoBehaviour
         }
         Debug.Log("InterstitialAdTest was destroyed!");
     }
+
+    // Next button
+    public void NextScene()
+    {
+        SceneManager.LoadScene("AdViewScene");
+    }
+
 
 
 }

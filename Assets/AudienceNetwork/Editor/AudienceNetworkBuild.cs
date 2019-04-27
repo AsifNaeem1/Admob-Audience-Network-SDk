@@ -20,6 +20,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+using UnityEditor.Build.Reporting;
 
 namespace AudienceNetwork.Editor
 {
@@ -30,7 +31,7 @@ namespace AudienceNetwork.Editor
     using UnityEditor;
     using UnityEngine;
 
-    public class AudienceNetworkBuild
+    public static class AudienceNetworkBuild
     {
         public const string AudienceNetworkPath = "Assets/AudienceNetwork/";
         public const string AudienceNetworkPluginsPath = AudienceNetworkPath + "Plugins/";
@@ -38,56 +39,96 @@ namespace AudienceNetwork.Editor
         public const string AudienceNetworkPluginAndroidPath = AudienceNetworkPluginsPath + "Android/libs/AudienceNetwork.aar";
         public static string PluginsPath = "Assets/Plugins/";
 
-        public enum Target {
+        public enum Target
+        {
             DEBUG,
             RELEASE
         }
 
-        private static string PackageName {
+        private static string VersionName
+        {
             get
             {
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "audience-network-unity-sdk-{0}.unitypackage",
+                    "audience-network-unity-sdk-{0}",
                     SdkVersion.Build);
             }
         }
 
-        private static string OutputPath {
+        private static string UnityPackagePath
+        {
             get
             {
-                DirectoryInfo projectRoot = Directory.GetParent(Directory.GetCurrentDirectory());
-                var outputDirectory = new DirectoryInfo(Path.Combine(projectRoot.FullName, "out"));
+                string unityPackageName = string.Format("{0}.unitypackage", VersionName);
+                return Path.Combine(OutputDirectoryPath, unityPackageName);
+            }
+        }
 
-                // Create the directory if it doesn't exist
+        private static string AndroidAPKPath
+        {
+            get
+            {
+                string androidApkName = string.Format("{0}.apk", VersionName);
+                return Path.Combine(OutputDirectoryPath, androidApkName);
+            }
+        }
+
+        private static string IOSProjectPath
+        {
+            get
+            {
+                string iOSProjectName = string.Format("{0}-ios", VersionName);
+                return Path.Combine(OutputDirectoryPath, iOSProjectName);
+            }
+        }
+
+        private static string[] Scenes
+        {
+            get
+            {
+                return new string[] { "Assets/AudienceNetwork/Scenes/Banner/AdViewScene.unity",
+                "Assets/AudienceNetwork/Scenes/Interstitial/InterstitialAdScene.unity",
+                "Assets/AudienceNetwork/Scenes/NativeAd/NativeAdScene.unity",
+                "Assets/AudienceNetwork/Scenes/NativeBannerAd/NativeBannerAdScene.unity",
+                "Assets/AudienceNetwork/Scenes/RewardedVideo/RewardedVideoAdScene.unity" };
+            }
+        }
+
+        private static string OutputDirectoryPath
+        {
+            get
+            {
+                DirectoryInfo outputDirectory = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "out"));
                 outputDirectory.Create();
-                return Path.Combine(outputDirectory.FullName, AudienceNetworkBuild.PackageName);
+                DirectoryInfo versionOutputDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, VersionName));
+                versionOutputDirectory.Create();
+                return versionOutputDirectory.FullName;
             }
         }
 
         // Exporting the *.unityPackage for Asset store
-        public static string ExportPackage()
+        public static bool ExportPackage()
         {
-            Debug.Log("Exporting Audience Network Unity Package...");
-
             // Check that SDKs are built
             bool iOSFound = File.Exists(AudienceNetworkPluginiOSPath);
             bool androidFound = File.Exists(AudienceNetworkPluginAndroidPath);
-            if (!iOSFound || !androidFound) {
-                Debug.Log("Exporting failed, no AN SDK build found. Found SDKS - iOS: " +  iOSFound + " Android: " + androidFound);
-                throw new FileNotFoundException();
+            if (!iOSFound || !androidFound)
+            {
+                Debug.Log("Exporting failed, no AN SDK build found. Found SDKS - iOS: " + iOSFound + " Android: " + androidFound);
+                return false;
             }
 
-            var path = AudienceNetworkBuild.OutputPath;
 
-            try {
+            try
+            {
                 AssetDatabase.DeleteAsset(PluginsPath + "Android/AndroidManifest.xml");
                 AssetDatabase.DeleteAsset(PluginsPath + "Android/AndroidManifest.xml.meta");
                 AssetDatabase.DeleteAsset(AudienceNetworkPluginsPath + "Android/AndroidManifest.xml");
                 AssetDatabase.DeleteAsset(AudienceNetworkPluginsPath + "Android/AndroidManifest.xml.meta");
 
-                string[] facebookFiles = (string[])Directory.GetFiles(AudienceNetworkPath, "*.*", SearchOption.AllDirectories);
-                string[] pluginsFiles = (string[])Directory.GetFiles(AudienceNetworkPluginsPath, "*.*", SearchOption.AllDirectories);
+                string[] facebookFiles = Directory.GetFiles(AudienceNetworkPath, "*.*", SearchOption.AllDirectories);
+                string[] pluginsFiles = Directory.GetFiles(AudienceNetworkPluginsPath, "*.*", SearchOption.AllDirectories);
                 string[] files = new string[facebookFiles.Length + pluginsFiles.Length];
 
                 facebookFiles.CopyTo(files, 0);
@@ -95,15 +136,94 @@ namespace AudienceNetwork.Editor
 
                 AssetDatabase.ExportPackage(
                     files,
-                    path,
+                    UnityPackagePath,
                     ExportPackageOptions.IncludeDependencies | ExportPackageOptions.Recurse);
             }
-            finally {
+            finally
+            {
                 // regenerate the manifest
-                AudienceNetwork.Editor.ManifestMod.GenerateManifest();
+                ManifestMod.GenerateManifest();
             }
-            Debug.Log("Finished exporting!");
-            return path;
+            return true;
+        }
+
+        private static BuildReport BuildAndroidAPK()
+        {
+            return BuildPipeline.BuildPlayer(Scenes, AndroidAPKPath, BuildTarget.Android, BuildOptions.None);
+        }
+
+        private static BuildReport BuildiOSProject()
+        {
+            return BuildPipeline.BuildPlayer(Scenes, IOSProjectPath, BuildTarget.iOS, BuildOptions.None);
+        }
+
+        private static bool ReportOnBuild(BuildReport report)
+        {
+            BuildSummary summary = report.summary;
+            if (summary.result == BuildResult.Succeeded)
+            {
+                string message = string.Format("Success! File created at {0}", summary.outputPath);
+                LogActionSuccess(message);
+                return true;
+            }
+            LogActionFailure("Something went wrong!");
+            return false;
+        }
+
+        public static void BuildRelease()
+        {
+            LogActionStart("Exporting unitypackage");
+            if (ExportPackage())
+            {
+                string message = string.Format("unitypackage exported to {0}", UnityPackagePath);
+                LogActionSuccess(message);
+            }
+            else
+            {
+                LogActionFailure("Failed exporting unitypackage");
+                return;
+            }
+
+            LogActionStart("Building Android APK");
+            BuildReport androidBuildReport = BuildAndroidAPK();
+            if (!ReportOnBuild(androidBuildReport))
+            {
+                LogActionFailure("Android APK failed to build. Exiting");
+                return;
+            }
+
+            LogActionStart("Building iOS Project");
+            BuildReport iOSBuildReport = BuildiOSProject();
+            if (!ReportOnBuild(iOSBuildReport))
+            {
+                LogActionFailure("iOS Project failed to build. Exiting.");
+                return;
+            }
+        }
+
+        private static void LogActionStart(string test)
+        {
+            PrintToConsole(test, ConsoleColor.Yellow, false);
+        }
+
+        private static void LogActionSuccess(string test)
+        {
+            PrintToConsole(test, ConsoleColor.Green);
+        }
+
+        private static void LogActionFailure(string test)
+        {
+            PrintToConsole(test, ConsoleColor.Red);
+        }
+
+        private static void PrintToConsole(string text, ConsoleColor color, bool revertToWhite = true)
+        {
+            Console.ForegroundColor = color;
+            Debug.Log(text);
+            if (revertToWhite)
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+            }
         }
 
         public delegate void SDKBuildCallback(bool success, string version, string message, string buildOutput, string buildError);
@@ -114,51 +234,66 @@ namespace AudienceNetwork.Editor
             string workingDirectory = Path.Combine(projectRoot.FullName, "ads/scripts/");
             string script = Path.Combine(workingDirectory, "build_distribution.sh");
             string scriptPlusArgs = script + " -v " + version;
-            if (skipBuild) {
+            if (skipBuild)
+            {
                 scriptPlusArgs = scriptPlusArgs + " -s";
             }
 
-            ProcessStartInfo processStartInfo = new ProcessStartInfo("sh", scriptPlusArgs);
-            processStartInfo.RedirectStandardOutput = true;
-            processStartInfo.RedirectStandardError = true;
-            processStartInfo.UseShellExecute = false;
-            processStartInfo.WorkingDirectory = workingDirectory;
+            ProcessStartInfo processStartInfo = new ProcessStartInfo("sh", scriptPlusArgs)
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = workingDirectory
+            };
 
             StringBuilder outputBuilder = new StringBuilder();
             StringBuilder errorBuilder = new StringBuilder();
             List<string> outputList = new List<string>();
 
-            Process process = new Process();
-            process.StartInfo = processStartInfo;
-            process.EnableRaisingEvents = true;
+            Process process = new Process
+            {
+                StartInfo = processStartInfo,
+                EnableRaisingEvents = true
+            };
 
             outputBuilder.Append("Build Starting...\n");
             yield return new SDKBuildStatus(true, outputList, process);
 
-            using(AutoResetEvent outputWaitHandle = new AutoResetEvent(false))
-            using(AutoResetEvent errorWaitHandle = new AutoResetEvent(false)) {
-                process.OutputDataReceived += (sender, e) => {
-                    if (e.Data == null) {
+            using (AutoResetEvent outputWaitHandle = new AutoResetEvent(false))
+            using (AutoResetEvent errorWaitHandle = new AutoResetEvent(false))
+            {
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (e.Data == null)
+                    {
                         outputWaitHandle.Set();
-                    } else {
+                    }
+                    else
+                    {
                         outputBuilder.AppendLine(e.Data);
                         outputList.Add(e.Data);
                     }
                 };
-                process.ErrorDataReceived += (sender, e) => {
-                    if (e.Data == null) {
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (e.Data == null)
+                    {
                         errorWaitHandle.Set();
-                    } else {
+                    }
+                    else
+                    {
                         errorBuilder.AppendLine(e.Data);
                     }
                 };
 
                 bool exited = false;
 
-                process.Exited += (sender, e) => {
+                process.Exited += (sender, e) =>
+                {
                     string output = outputBuilder.ToString();
                     string error = errorBuilder.ToString();
-                    bool success = (process.ExitCode == 0);
+                    bool success = process.ExitCode == 0;
                     string message = success ? "Completed successfully." : "Build script returned an error, check console log.";
                     exited = true;
                     callback(success, version, message, output, error);
@@ -169,10 +304,14 @@ namespace AudienceNetwork.Editor
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
-                while (true) {
-                    if (!exited) {
+                while (true)
+                {
+                    if (!exited)
+                    {
                         yield return new SDKBuildStatus(true, outputList, process);
-                    } else {
+                    }
+                    else
+                    {
                         yield break;
                     }
                 }

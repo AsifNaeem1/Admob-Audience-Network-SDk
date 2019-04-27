@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/SpotLightSDK/Scenes/DemoScene.unity
+    path: Assets/Scenes/AdsDemoScene.unity
     guid: 93b40e02786a74210be44bce1ef585bc
   m_configObjects: {}

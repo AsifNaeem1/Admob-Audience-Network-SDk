@@ -17,33 +17,22 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-using System.IO;
-using System.Text;
-using System.Threading;
-using UnityEditor.Callbacks;
-using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
-using System;
-
 namespace AudienceNetwork.Editor
 {
-    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Reflection;
     using UnityEditor;
     using UnityEngine;
-    using AudienceNetwork.Editor;
 
-    public class AudienceNetworkSettingsEditor : UnityEditor.Editor
+    public class AudienceNetworkSettingsEditor : Editor
     {
-        private static string title = "Audience Network SDK";
+        private static readonly string title = "Audience Network SDK";
 
         [MenuItem("Tools/Audience Network/About")]
         private static void AboutGUI()
         {
-            string aboutString = System.String.Format("Facebook Audience Network Unity SDK Version {0}",
-                                 AudienceNetwork.SdkVersion.Build);
+            string aboutString = string.Format("Facebook Audience Network Unity SDK Version {0}",
+                                 SdkVersion.Build);
             EditorUtility.DisplayDialog(title,
                                         aboutString,
                                         "Okay");
@@ -58,33 +47,9 @@ namespace AudienceNetwork.Editor
                                   "Cancel");
 
             if (updateManifest) {
-                AudienceNetwork.Editor.ManifestMod.GenerateManifest();
+                ManifestMod.GenerateManifest();
                 EditorUtility.DisplayDialog(title, "Android Manifest updated. \n \n If interstitial ads still throw ActivityNotFoundException, " +
                                             "you may need to copy the generated manifest at " + ManifestMod.AndroidManifestPath + " to /Assets/Plugins/Android.", "Okay");
-            }
-        }
-
-        [MenuItem("Tools/Audience Network/Internal/Build SDK Package")]
-        private static void BuildGUI()
-        {
-            try {
-                string exportedPath = AudienceNetworkBuild.ExportPackage();
-                EditorUtility.DisplayDialog(title, "Exported to " + exportedPath, "Okay");
-
-            } catch (System.Exception e) {
-                EditorUtility.DisplayDialog(title, e.Message, "Okay");
-            }
-        }
-
-        [MenuItem("Tools/Audience Network/Internal/Build SDKs from Source")]
-        private static void BuildSDKs()
-        {
-            try {
-                SDKVersionWindow window = ScriptableObject.CreateInstance<SDKVersionWindow>();
-                window.minSize = new Vector2(400, 150);
-                window.ShowUtility();
-            } catch (System.Exception e) {
-                EditorUtility.DisplayDialog(title, e.Message, "Okay");
             }
         }
     }
@@ -93,34 +58,31 @@ namespace AudienceNetwork.Editor
     {
 
         public string version = "";
-        public bool skipBuild = false;
-        private bool building = false;
+        public bool skipBuild;
+        private bool building;
         private IEnumerator<SDKBuildStatus> buildStatusEnumerator;
 
         private const float maxHeight = float.MaxValue;
 
         void OnEnable()
         {
-            this.titleContent.text = "Audience Network Unity SDK Build Generator";
+            titleContent.text = "Audience Network Unity SDK Build Generator";
         }
 
         void OnGUI()
         {
             EditorGUILayout.LabelField("SDK Base Version: (4.19.0)", version, GUILayout.MinWidth(600));
-            this.version = GUILayout.TextField(this.version);
-
-            this.skipBuild = GUILayout.Toggle(this.skipBuild, "Skip build?");
+            version = GUILayout.TextField(version);
+            skipBuild = GUILayout.Toggle(skipBuild, "Skip build?");
 
             GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button("Generate Build") && this.version.Length > 0) {
-                this.building = true;
-            }
+            building |= GUILayout.Button("Generate Build") && version.Length > 0;
 
             GUILayout.FlexibleSpace();
 
             if (GUILayout.Button("Cancel")) {
-                this.EndBuild();
+                EndBuild();
             }
         }
 
@@ -132,14 +94,16 @@ namespace AudienceNetwork.Editor
         void Update()
         {
             if (building) {
-                if (this.buildStatusEnumerator == null) {
-                    IEnumerable<SDKBuildStatus> buildStatusEnumerable = AudienceNetwork.Editor.AudienceNetworkBuild.RunSDKBuild(SdkVersion.Build, false,
-                    (delegate(bool success, string version, string message, string buildOutput, string buildError) {
+                if (buildStatusEnumerator == null) {
+                    AudienceNetworkBuild.SDKBuildCallback callback = delegate (bool success, string version, string message, string buildOutput, string buildError)
+                    {
                         UnityEngine.Debug.Log("Build Complete for " + version + ".\nSuccess? " + success.ToString());
-                        this.building = false;
-                    }));
+                        building = false;
+                    };
+                    IEnumerable<SDKBuildStatus> buildStatusEnumerable = AudienceNetworkBuild.RunSDKBuild(SdkVersion.Build, false,
+                    callback);
 
-                    this.buildStatusEnumerator = buildStatusEnumerable.GetEnumerator();
+                    buildStatusEnumerator = buildStatusEnumerable.GetEnumerator();
                 }
 
                 if (buildStatusEnumerator.MoveNext()) {
@@ -149,27 +113,25 @@ namespace AudienceNetwork.Editor
                         UnityEngine.Debug.Log(logs.Pop());
                     }
 
-                    if (buildStatus != null && !buildStatus.BuildInProgress) {
-                        building = false;
-                    }
+                    building &= buildStatus == null || buildStatus.BuildInProgress;
                 }
             }
         }
 
         void OnDisable()
         {
-            this.EndBuild();
+            EndBuild();
         }
 
-        void EndBuild()
+        private void EndBuild()
         {
-            this.building = false;
-            if (this.buildStatusEnumerator != null && buildStatusEnumerator.MoveNext()) {
+            building = false;
+            if (buildStatusEnumerator != null && buildStatusEnumerator.MoveNext()) {
                 SDKBuildStatus buildStatus = buildStatusEnumerator.Current;
                 if (buildStatus != null && buildStatus.process != null) {
                     KillProcess(buildStatus.process);
                 }
-                this.buildStatusEnumerator = null;
+                buildStatusEnumerator = null;
                 UnityEngine.Debug.Log("Build cancelled.");
             }
         }
@@ -184,6 +146,5 @@ namespace AudienceNetwork.Editor
                 processToBeKilled.Kill();
             }
         }
-
     }
 }

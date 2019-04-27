@@ -5,10 +5,10 @@ using System.Collections;
 using System.Collections.Generic;
 using AudienceNetwork;
 using UnityEngine.SceneManagement;
-
+ 
 public class RewardedVideoAdScene : MonoBehaviour
 {
-
+    //AdmobHandler admob;
     private RewardedVideoAd rewardedVideoAd;
     private bool isLoaded;
 #pragma warning disable 0414
@@ -16,16 +16,17 @@ public class RewardedVideoAdScene : MonoBehaviour
 #pragma warning restore 0414
 
     // UI elements in scene
-    public Text statusLabel;
+    //public Text statusLabel;
+    public string YOUR_PLACEMENT_ID;
 
     // Load button
     public void LoadRewardedVideo()
     {
-        this.statusLabel.text = "Loading rewardedVideo ad...";
+//        this.statusLabel.text = "Loading rewardedVideo ad...";
 
         // Create the rewarded video unit with a placement ID (generate your own on the Facebook app settings).
         // Use different ID for each ad placement in your app.
-        this.rewardedVideoAd = new RewardedVideoAd("YOUR_PLACEMENT_ID");
+        this.rewardedVideoAd = new RewardedVideoAd(YOUR_PLACEMENT_ID);
 
         // For S2S validation you can create the rewarded video ad with the reward data
         // Refer to documentation here:
@@ -35,7 +36,7 @@ public class RewardedVideoAdScene : MonoBehaviour
         rewardData.UserId = "USER_ID";
         rewardData.Currency = "REWARD_ID";
 #pragma warning disable 0219
-        RewardedVideoAd s2sRewardedVideoAd = new RewardedVideoAd("YOUR_PLACEMENT_ID", rewardData);
+        RewardedVideoAd s2sRewardedVideoAd = new RewardedVideoAd(YOUR_PLACEMENT_ID, rewardData);
 #pragma warning restore 0219
 
         this.rewardedVideoAd.Register(this.gameObject);
@@ -43,15 +44,15 @@ public class RewardedVideoAdScene : MonoBehaviour
         // Set delegates to get notified on changes or when the user interacts with the ad.
         this.rewardedVideoAd.RewardedVideoAdDidLoad = (delegate ()
         {
-            Debug.Log("RewardedVideo ad loaded.");
+            Debug.Log("facebook RewardedVideo ad loaded.");
             this.isLoaded = true;
             this.didClose = false;
-            this.statusLabel.text = "Ad loaded. Click show to present!";
+            //this.statusLabel.text = "Ad loaded. Click show to present!";
         });
         this.rewardedVideoAd.RewardedVideoAdDidFailWithError = (delegate (string error)
         {
-            Debug.Log("RewardedVideo ad failed to load with error: " + error);
-            this.statusLabel.text = "RewardedVideo ad failed to load. Check console for details.";
+            Debug.Log("facebook RewardedVideo ad failed to load with error: " + error);
+            //this.statusLabel.text = "RewardedVideo ad failed to load. Check console for details.";
         });
         this.rewardedVideoAd.RewardedVideoAdWillLogImpression = (delegate ()
         {
@@ -78,12 +79,14 @@ public class RewardedVideoAdScene : MonoBehaviour
 
         this.rewardedVideoAd.RewardedVideoAdDidClose = (delegate ()
         {
-            Debug.Log("Rewarded video ad did close.");
+            Debug.Log("facebook Rewarded video ad did close.");
+
             this.didClose = true;
             if (this.rewardedVideoAd != null)
             {
                 this.rewardedVideoAd.Dispose();
             }
+            LoadRewardedVideo();// loading add again on close
         });
 
 #if UNITY_ANDROID
@@ -115,11 +118,15 @@ public class RewardedVideoAdScene : MonoBehaviour
         {
             this.rewardedVideoAd.Show();
             this.isLoaded = false;
-            this.statusLabel.text = "";
+            //this.statusLabel.text = "";
+            Debug.Log("facebook Showing rewarded video ad");
         }
         else
         {
-            this.statusLabel.text = "Ad not loaded. Click load to request an ad.";
+            //this.statusLabel.text = "Ad not loaded. Click load to request an ad.";
+            Debug.Log("facebook rewarded video ad is not loaded, requesting again");
+            LoadRewardedVideo();
+
         }
     }
 
@@ -138,4 +145,5 @@ public class RewardedVideoAdScene : MonoBehaviour
     {
         SceneManager.LoadScene("NativeAdScene");
     }
+
 }

@@ -28,8 +28,8 @@ namespace AudienceNetwork.Editor
 
     public static class Utility
     {
-        private static string BundleIdentifier = "bundleIdentifier";
-        private static string ApplicationIdentifier = "applicationIdentifier";
+        private static readonly string BundleIdentifier = "bundleIdentifier";
+        private static readonly string ApplicationIdentifier = "applicationIdentifier";
 
         public static T Pop<T> (this IList<T> list)
         {
@@ -60,7 +60,7 @@ namespace AudienceNetwork.Editor
 
         public static bool HasProperty(Type type, string propertyName)
         {
-            return (type.GetProperty(propertyName) != null);
+            return type.GetProperty(propertyName) != null;
         }
 
         public static T GetPropertyValue<T>(Type type, string propertyName)

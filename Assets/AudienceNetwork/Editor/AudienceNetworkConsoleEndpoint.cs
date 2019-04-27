@@ -17,12 +17,6 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
-/// <summary>
-/// Audience Network console endpoint. This endpoint exposes some internal functionality
-/// that can be called with unity from the command line. This class is public and static
-/// outside of a namespace to enable it to be called by unity.
-/// </summary>
 using AudienceNetwork.Editor;
 
 public static class AudienceNetworkConsoleEndpoint
