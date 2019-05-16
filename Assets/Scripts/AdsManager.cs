@@ -44,6 +44,7 @@ public class AdsManager : MonoBehaviour
     [Header("Unity Rewarded video ID")]
     string placementIdRewarded = "rewardedVideo";
     string placementIdUnity = "video";
+    string unityInterstitialAdID = "InterstitialAd";
     int intCount = 1; // Interstitial Count
 
     void Awake()
@@ -128,7 +129,39 @@ public class AdsManager : MonoBehaviour
 #endif
     }
 
-    
+    public void ShowUnityInterstitial()
+    {
+        var options = new ShowOptions();
+        options.resultCallback = HandleShowResultInterstitial;
+
+        if (Advertisement.IsReady(unityInterstitialAdID))
+        {
+            Advertisement.Show(placementIdUnity, options);
+        }
+        else
+        {
+            Debug.Log("Unity Interstitial is not ready");
+        }
+
+    }
+
+    void HandleShowResultInterstitial(ShowResult result)
+    {
+        if (result == ShowResult.Finished)
+        {
+            Debug.Log("Unity Interstitial");
+
+        }
+        else if (result == ShowResult.Skipped)
+        {
+            Debug.LogWarning("Unity Interstitial Skipp");
+
+        }
+        else if (result == ShowResult.Failed)
+        {
+            Debug.LogError("Unity Interstitial Fail");
+        }
+    }
 
     public void ShowUnityVideoAd()
     {
