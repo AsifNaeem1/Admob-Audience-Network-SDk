@@ -16,3 +16,14 @@ Check List \
 2- Add your AdMob app ID to the AndroidManifest.xml file in the Assets/Plugins/Android/GoogleMobileAdsPlugin directory of your Unity app, using the <meta-data> tag as shown below. You can find your app ID in the AdMob UI. For android:value insert your own AdMob app ID in quotes.\
 3- In AdsManager.cs Start() lines are commented to test with DemoScene. Each function call is manual. Uncomment these lines before use.
 4- Uncheck Test Ads before final release.
+  
+  
+ Common Error & Solution Xcode
+  clang: error: linker command failed with exit code 1.
+  Iss error ki detail b ni milti. Ni pta chalta k kis waja say arha ha
+  
+  Solution: DISABLE BITCODE:
+  In Xcode Under the 'Build Settings' tab there is a 'Build Options' tab. Change the 'Enable Bitcode' part to 'No'
+  https://answers.unity.com/questions/819445/xcode-clang-error-linker-command-failed-with-exit.html
+  
+  
