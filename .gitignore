@@ -8,7 +8,7 @@ source/PluginDev/obj/
 # Unity3D
 AssetStoreTools.meta
 AssetStoreTools/
-Library/
+/Library/
 source/PluginDev/ProjectSettings/
 Temp/
 
