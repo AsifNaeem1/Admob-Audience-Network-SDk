@@ -136,7 +136,7 @@ public class AdsManager : MonoBehaviour
 
         if (Advertisement.IsReady(unityInterstitialAdID))
         {
-            Advertisement.Show(placementIdUnity, options);
+            Advertisement.Show(unityInterstitialAdID, options);
         }
         else
         {
