@@ -1,0 +1,83 @@
+{
+  "project_info": {
+    "project_number": "946051441031",
+    "firebase_url": "https://spotlight-studio-8b996.firebaseio.com",
+    "project_id": "spotlight-studio-8b996",
+    "storage_bucket": "spotlight-studio-8b996.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:946051441031:android:f8aa76878bbe5d1b",
+        "android_client_info": {
+          "package_name": "com.spotlight.pick.me.up.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "946051441031-nlvnfi5f1qtj7krb7v850ect42m5l79j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjh1yQGt8xr-R6bKeYVyffXWPk52n3JOA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "946051441031-nlvnfi5f1qtj7krb7v850ect42m5l79j.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "946051441031-pkp14cdsp3m5pj9disj1cd9p39jel41b.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.spotlight.pick.me.up.ios"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:946051441031:android:1a6cddc9aa82ce78",
+        "android_client_info": {
+          "package_name": "com.spotlight.sdktest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "946051441031-nlvnfi5f1qtj7krb7v850ect42m5l79j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjh1yQGt8xr-R6bKeYVyffXWPk52n3JOA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "946051441031-nlvnfi5f1qtj7krb7v850ect42m5l79j.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "946051441031-pkp14cdsp3m5pj9disj1cd9p39jel41b.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.spotlight.pick.me.up.ios"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
