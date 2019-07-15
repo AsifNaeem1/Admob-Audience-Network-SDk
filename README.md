@@ -1,4 +1,19 @@
-# Amob, Audience Network & Unity Ads in Signgle Package
+
+# Release 2.0
+
+- Added Latest Admob Unity Plugin 3.18.1
+- Latest Firebase SDk 6.2.0
+- Big Banner
+- Ads SDK inatilization method is changed
+- New Rewarded Video replaced with old
+- New App Id input setting
+- App ID using Unity Menu Assets>Google Admob> Setting
+
+
+
+
+# Release 1.1.0
+## Amob, Audience Network & Unity Ads in Signgle Package
 
 Package Version\
 Google Mobile Ads Unity Plugin v3.16\
